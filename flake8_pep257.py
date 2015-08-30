@@ -7,6 +7,7 @@ https://pypi.python.org/pypi/flake8-pep257
 import codecs
 import gc
 import os
+from re import compile as re
 
 import pep257
 import pep8
@@ -98,10 +99,11 @@ class Main(object):
             return
         native_options = dict()
         for option in config.options('pep257'):
-            if option == 'ignore':
-                native_options['ignore'] = config.get('pep257', option)
+            if option in ('ignore', 'match'):
+                native_options[option] = config.get('pep257', option)
             if option in ('explain', 'source'):
                 native_options[option] = config.getboolean('pep257', option)
+        native_options['pep257_match'] = native_options.pop('match', None)
         native_options['show-source'] = native_options.pop('source', None)
         if native_options.get('ignore'):
             native_options['ignore'] = native_options['ignore'].split(',')
@@ -109,6 +111,11 @@ class Main(object):
 
     def run(self):
         """Run analysis on a single file."""
+        basename = os.path.basename(self.filename)
+        if basename is not "stdin" and self.options.get('pep257_match'):
+            if not re(self.options['pep257_match'] + '$').match(basename):
+                return
+
         pep257.Error.explain = self.options['explain']
         filename, source = load_file(self.filename)
         for error in pep257.PEP257Checker().check_source(source, filename):
