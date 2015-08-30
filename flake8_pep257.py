@@ -112,7 +112,7 @@ class Main(object):
     def run(self):
         """Run analysis on a single file."""
         basename = os.path.basename(self.filename)
-        if basename != "stdin" and self.options.get('pep257_match'):
+        if basename != 'stdin' and self.options.get('pep257_match'):
             if not re(self.options['pep257_match'] + '$').match(basename):
                 return
 
